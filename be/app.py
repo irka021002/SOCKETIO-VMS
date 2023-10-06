@@ -14,13 +14,17 @@ socketio = SocketIO(app)
 socketio.init_app(app, cors_allowed_origins="*")
 net = cv.dnn.readNet(os.getenv("MODEL_PATH"), os.getenv("CONFIG_PATH"))
 classes = []
+cameras = [
+    (1,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"),
+    (2,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"),
+    (3,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"),
+    (4,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"),
+]
 with open(os.getenv("NAMES_PATH"), "r") as f:
-    classes = f.read().strip().split('\n')
+    classes = f.read().strip().split('\n')\
 
-@socketio.on('image')
-def handle_camera(data):
-    print("Sending picture beybeh")
-    cap = cv.VideoCapture(os.getenv("INPUT_PATH"))
+def startCamera(index, path):
+    cap = cv.VideoCapture(path)
     width = int(cap.get(3))
     height = int(cap.get(4))
 
@@ -69,10 +73,16 @@ def handle_camera(data):
             frame = cv.imencode('.jpg', frame)[1].tobytes()
             frame = base64.encodebytes(frame).decode("utf-8")
 
-            socketio.emit('image', frame)
+            socketio.emit(f'image-{index}', frame)
             socketio.sleep(0)
         else:
             break
 
+@socketio.on('camera')
+def handle_camera(data):
+    for camera in cameras:
+        startCamera(camera[0],camera[1])
+
 if __name__ == '__main__':
     socketio.run(app, debug=True)
+    

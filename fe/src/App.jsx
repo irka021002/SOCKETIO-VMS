@@ -6,6 +6,12 @@ import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
+  const [cameras, setCameras] = useState([
+    [1,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"],
+    [2,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"],
+    [3,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"],
+    [4,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"],
+  ])
 
   useEffect(() => {
     const socket = io('http://127.0.0.1:5000');
@@ -13,28 +19,28 @@ function App() {
     socket.on('connect', () => {
       console.log('Connected to server');
     });
-
-    socket.emit("image", "wake up")
-
-    socket.on('image', (data) => {
-      console.log(data);
-      // Make sure the image element with id 'videoPresent' exists in your HTML
-      const videoPresent = document.getElementById('videoPresent');
-      if (videoPresent) {
-        videoPresent.src = `data:image/jpeg;base64, ${data}`;
-      }
-    });
+    socket.emit("camera", "wake up")
+    cameras.map(v => {
+      socket.on(`image-${v[0]}`, (data) => {
+        const videoPresent = document.getElementById(`video-${v[0]}`);
+        if (videoPresent) {
+          videoPresent.src = `data:image/jpeg;base64, ${data}`;
+        }
+      });
+    })
 
     // Cleanup by removing the 'camera' event listener when unmounting
     return () => {
-      socket.off('image');
+      cameras.map(v => {
+        socket.off(`image-${v[0]}`);
+      })
     };
   }, []);
 
   return (
     <>
-      <div>
-        <img width={500} height={500} alt="" id='videoPresent' />
+      <div style={{display: "flex", flexWrap: "wrap"}}>
+        {cameras.map(v => <img width={500} height={500} id={`video-${v[0]}`} />)}
       </div>
       <h1>Vite + React</h1>
       <div className="card">
