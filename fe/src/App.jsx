@@ -10,17 +10,16 @@ function App() {
     [1,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"],
     [2,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"],
     [3,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"],
-    [4,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"],
+    // [4,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"],
   ])
 
   useEffect(() => {
-    const socket = io('http://127.0.0.1:5000');
-
-    socket.on('connect', () => {
-      console.log('Connected to server');
-    });
-    socket.emit("camera", "wake up")
     cameras.map(v => {
+      const socket = io(`http://127.0.0.1:404${v[0]}`);
+      socket.on('connect', () => {
+        console.log('Connected to server');
+      });
+      socket.emit("camera", "wake up")
       socket.on(`image-${v[0]}`, (data) => {
         const videoPresent = document.getElementById(`video-${v[0]}`);
         if (videoPresent) {
@@ -28,13 +27,6 @@ function App() {
         }
       });
     })
-
-    // Cleanup by removing the 'camera' event listener when unmounting
-    return () => {
-      cameras.map(v => {
-        socket.off(`image-${v[0]}`);
-      })
-    };
   }, []);
 
   return (

@@ -15,10 +15,10 @@ socketio.init_app(app, cors_allowed_origins="*")
 net = cv.dnn.readNet(os.getenv("MODEL_PATH"), os.getenv("CONFIG_PATH"))
 classes = []
 cameras = [
-    (1,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"),
+    # (1,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"),
     (2,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"),
-    (3,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"),
-    (4,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"),
+    # (3,"rtsp://admin:rastek123@10.50.0.13/cam/realmonitor?channel=1&subtype=00"),
+    # (4,"rtsp://admin:ipcam@reog39@10.50.0.14/cam/realmonitor?channel=1&subtype=00"),
 ]
 with open(os.getenv("NAMES_PATH"), "r") as f:
     classes = f.read().strip().split('\n')\
@@ -84,5 +84,5 @@ def handle_camera(data):
         startCamera(camera[0],camera[1])
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, port=4042, debug=True)
     
